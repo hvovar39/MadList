@@ -1,13 +1,13 @@
 #include <stdio.h>
 
 //crée toute les structure pour la liste
-//@vovard
+
 void *ld_creer (size_t nboctets){ 
   
 }
 
 //retourne le pointeur vers le premier noeud de la liste, ou NULL si la liste est vide
-//@lemoinne
+
 void *ld_first(void *liste){
   
 }
