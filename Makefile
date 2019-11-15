@@ -4,10 +4,13 @@ CFLAGS = -Wall -g -std=c11
 
 LDLIBS = -lm
 
-ALL = projet2019
+ALL = test
 all : $(ALL)
 
+projet2019.o : projet2019.c projet2019.h
 
-projet2019 : projet2019.h projet2019.c
+test.o : test_00.c projet2019.h
 
-cleanall : rm -rf *~ $(ALL)
+test : test_00.o projet2019.o
+
+cleanall : rm -rf *~ *.o $(ALL)
