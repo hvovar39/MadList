@@ -58,7 +58,10 @@ void *ld_create (size_t nboctets){
 //retourne le pointeur vers le premier noeud de la liste, ou NULL si la liste est vide
 
 void *ld_first(void *liste){
-  return NULL;  
+  if (liste->first == liste->last)
+    return NULL;
+  else
+    return liste->memory + liste->first;
 }
 
 //retourne le pointeur vers le dernier noeud de la liste, ou NULL si la liste est vide
