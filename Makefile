@@ -8,6 +8,6 @@ ALL = projet2019
 all : $(ALL)
 
 
-projet2019 : projet2019.C
+projet2019 : projet2019.h projet2019.c
 
 cleanall : rm -rf *~ $(ALL)
