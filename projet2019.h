@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #ifndef PROJET2019_H
 #define PROJET2019_H
 
