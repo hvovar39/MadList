@@ -6,9 +6,9 @@
 #define PROJET2019_H
 
 
-typedef union align_data;
-typedef struct node;
-typedef struct head;
+typedef union align_data align_data;
+typedef struct node node;
+typedef struct head head;
 
 
 void *ld_create (size_t);

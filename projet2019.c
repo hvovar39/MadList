@@ -9,20 +9,20 @@
 DEFINITION DES STRUCTURES
 ==========================================*/
 
-typedef union {
+typedef union align_data{
   intmax_t a;
   void *adr;
   long double c;
 } align_data;
  
-typedef struct {
+typedef struct node{
   ptrdiff_t next;
   ptrdiff_t previous;
   size_t len;
   align_data data[];
 } node;
 
-typedef struct {
+typedef struct head{
   void *memory;   //pointeur vers la mémoire
   ptrdiff_t first;
   ptrdiff_t last;
@@ -46,9 +46,13 @@ void *ld_create (size_t nboctets){
   size_t len = nb_blocs (nboctets) * sizeof (align_data);
   void *memory = malloc (len);
   head *liste = malloc (sizeof (head));
-  *liste = { memory; 0; 0; 0;  len};
+  liste->memory = memory;
+  liste->first = 0;
+  liste->last = 0;
+  liste->libre = 0;
+  liste->len = len;
   
-  return *liste;
+  return liste;
 }
 
 //retourne le pointeur vers le premier noeud de la liste, ou NULL si la liste est vide
@@ -126,7 +130,7 @@ size_t  ld_total_free_memory(void*liste){
 //retourne la taille de la mémoire libre qui peut être encore utilisée pour créer de nouveauxnœuds (si on ne réutilise pas la mémoire libérée cela peut être beaucoup moins que ce queretourne la fonction précédente qui compte aussi la mémoire libre mais non utilisable).
 
 size_t  ld_total_useful_memory(void*liste){
- return NULL;
+ return -1;
 }
 
 //agrandit la mémoire de nb_octets. Comme pour la création de la liste, on arrondit nb_octets vers un multiple de sizeof(align_data). Il est impossible de diminuer la taille de mémoire. La fonction retourne NULL en cas deproblème et liste sinon.

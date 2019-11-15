@@ -9,8 +9,14 @@ all : $(ALL)
 
 projet2019.o : projet2019.c projet2019.h
 
-test.o : test_00.c projet2019.h
+test_00.o : test_00.c projet2019.h
 
 test : test_00.o projet2019.o
 
-cleanall : rm -rf *~ *.o $(ALL)
+
+
+clean :
+	rm -rf *~
+
+cleanall :
+	rm -rf *~ *.o $(ALL)
