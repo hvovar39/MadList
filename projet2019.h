@@ -1,5 +1,7 @@
 #include <stdlib.h>
 #include <stdint.h>
+#include <stddef.h>
+
 #ifndef PROJET2019_H
 #define PROJET2019_H
 
