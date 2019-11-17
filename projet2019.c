@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stddef.h>
+#include <assert.h>
+#include <string.h>
 
 #include "projet2019.h"
 
@@ -35,6 +37,7 @@ typedef struct head{
 HEADERS DES FONCTIONS AUXILIAIRES
 ==========================================*/
 static size_t nb_blocs (size_t);
+static size_t total_node_size (void*, void*);
 
 /*==========================================
 FONCTIONS DE GESTION DE LISTE
@@ -104,13 +107,23 @@ void *ld_previous(void *liste, void *current){
 //la fonction detruit la liste en libérant la mémoire de head et de memory
 
 void ld_destroy(void *liste){
-
+  free (((head *)liste)->memory);
+  free (liste);
 }
 
-//current est un pointeur vers un nœud (donc différent deliste).ld_get copie len octets du champ data du nœud current vers l’adresse val. Si le nombre d’octets demandé est supérieur au nombre d’octets dans le champ data du nœud, on limite la copie aux octets qui sont dansdata. La fonction retourne le nombre d’octets copiés.
+//current est un pointeur vers un nœud (donc différent de liste).ld_get copie len octets du champ data du nœud current vers l’adresse val. Si le nombre d’octets demandé est supérieur au nombre d’octets dans le champ data du nœud, on limite la copie aux octets qui sont dansdata. La fonction retourne le nombre d’octets copiés.
 
 size_t ld_get(void *liste, void *current, size_t len, void *val){
-  return -1;
+  assert (len <= sizeof (*val));
+  size_t taille_data = sizeof ( *(((node *)current)+1) );
+
+  if (len > taille_data) {
+    memmove (val, ((node *)current)+1, taille_data);
+    return taille_data;
+  }
+
+  memmove (val, ((node *)current)+1, len);
+  return len;
 }
 
 //insère un nouveau nœud comme le premier élément de la liste
@@ -146,18 +159,34 @@ void * ld_delete_node(void*liste, void*n){
 //retourne le nombre d’octets libres dans la mémoire memory. Cela permettra de voir si la mémoire commence à être saturée
 
 size_t  ld_total_free_memory(void*liste){
-  return -1;
+  size_t free_mem = total_node_size (liste, liste);
+  
+  void *current = liste;
+  while ( ld_next(liste, current) != NULL)
+    free_mem -= total_node_size (liste, current);
+      
+  return free_mem;
 }
 
 //retourne la taille de la mémoire libre qui peut être encore utilisée pour créer de nouveauxnœuds (si on ne réutilise pas la mémoire libérée cela peut être beaucoup moins que ce queretourne la fonction précédente qui compte aussi la mémoire libre mais non utilisable).
 
 size_t  ld_total_useful_memory(void*liste){
- return -1;
+  size_t size_last_node = total_node_size ( liste, ((head *)liste)->memory + ((head *)liste)->last );
+  size_t useful_mem = ((head *)liste)->len - ( ((head *)liste)->last + size_last_node);
+  
+  return useful_mem;
 }
 
 //agrandit la mémoire de nb_octets. Comme pour la création de la liste, on arrondit nb_octets vers un multiple de sizeof(align_data). Il est impossible de diminuer la taille de mémoire. La fonction retourne NULL en cas deproblème et liste sinon.
 
 void*ld_add_memory(void*liste, size_t nboctets){
+  size_t taille = ((head *)liste)->len + (nb_blocs (nboctets) * sizeof (align_data));
+  void * temp = realloc ( ((head *)liste)->memory, taille);
+
+  if (temp != NULL){
+    ((head *)liste)->memory = temp;
+    return liste;
+  }
  return NULL;
 }
 
@@ -181,4 +210,13 @@ static size_t nb_blocs (size_t o){
     return result+1;
 
   return result;
+}
+
+//retourne la taille TOTAL du noeud pointer par current (sizeof (node) + sizeof (data)). Si current==liste, retourne liste->len
+static size_t total_node_size (void *liste, void *current) {
+  if (liste == current)
+    return ((head*)liste)->len;
+  
+  size_t taille_data = sizeof ( *((node  *)current)->data);
+  return sizeof(node)+taille_data;
 }
