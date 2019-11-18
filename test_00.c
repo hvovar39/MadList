@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 #include "projet2019.h"
-
+#include "affichage.h"
 
 
 int main(){

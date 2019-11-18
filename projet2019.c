@@ -64,7 +64,7 @@ void *ld_first(void *liste){
   if (((head*)liste)->first == 0)
     return NULL;
   else
-    return ((head*)liste)->memory + ((head*)liste)->first;
+    return ((align_data *)((head*)liste)->memory) + ((head*)liste)->first;
 }
 
 //retourne le pointeur vers le dernier noeud de la liste, ou NULL si la liste est vide
@@ -73,7 +73,7 @@ void *ld_last(void *liste){
   if (((head*)liste)->first == 0)
     return NULL;
   else
-    return ((head*)liste)->memory + ((head*)liste)->last;
+    return ((align_data *)((head*)liste)->memory) + ((head*)liste)->last;
 }
 
 //current est un pointeur qui pointe soit vers head(i.e.liste==current) soit vers un nœud. Dans le premier cas,ld_next retourne la valeur de ld_first(liste). Dans le deuxième cas elle retourne le pointeur vers le nœud qui suit current sur la liste. Si current pointe vers le dernier nœud sur la liste, la fonction retourne NULL. Si la liste est vide et liste==current, la fonction retourne NULL
@@ -81,11 +81,13 @@ void *ld_last(void *liste){
 void *ld_next(void *liste, void *current){
   if ( liste == current )
       return ld_first(liste);
-  else
-    if (((head*)liste)->first == 0 || ((node*)current)== ((head*)liste)->memory + ((head*)liste)->last)
+  else {
+    void *last = ((align_data *)((head*)liste)->memory) + ((head*)liste)->last;
+    if (((head*)liste)->first == 0 || (node*)current == (node *)last)
       return NULL;
     else
-      return ((head*)liste)->memory + ((node*)current)->next;
+      return ((align_data *)((head*)liste)->memory) + ((node*)current)->next;
+  }
 }
 
 //??????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
@@ -97,11 +99,13 @@ void *ld_next(void *liste, void *current){
 void *ld_previous(void *liste, void *current){
   if ( liste == current )
       return ld_last(liste);
-  else
-    if (((head*)liste)->first == 0 || ((node*)current)== ((head*)liste)->memory + ((head*)liste)->last)
+  else {
+    void *last = ((align_data *)((head*)liste)->memory) + ((head*)liste)->last;
+    if (((head*)liste)->first == 0 || (node*)current == (node *)last)
       return NULL;
     else
-      return ((head*)liste)->memory + ((node*)current)->previous;
+      return ((align_data *)((head*)liste)->memory) + ((node*)current)->previous;
+  }
 }
 
 //la fonction detruit la liste en libérant la mémoire de head et de memory
@@ -115,7 +119,8 @@ void ld_destroy(void *liste){
 
 size_t ld_get(void *liste, void *current, size_t len, void *val){
   assert (len <= sizeof (*val));
-  size_t taille_data = sizeof ( *(((node *)current)+1) );
+  node *data = ((node *)current)+1;
+  size_t taille_data = sizeof ( *data );
 
   if (len > taille_data) {
     memmove (val, ((node *)current)+1, taille_data);
@@ -171,7 +176,7 @@ size_t  ld_total_free_memory(void*liste){
 //retourne la taille de la mémoire libre qui peut être encore utilisée pour créer de nouveauxnœuds (si on ne réutilise pas la mémoire libérée cela peut être beaucoup moins que ce queretourne la fonction précédente qui compte aussi la mémoire libre mais non utilisable).
 
 size_t  ld_total_useful_memory(void*liste){
-  size_t size_last_node = total_node_size ( liste, ((head *)liste)->memory + ((head *)liste)->last );
+  size_t size_last_node = total_node_size ( liste, ((align_data *)((head *)liste)->memory) + ((head *)liste)->last );
   size_t useful_mem = ((head *)liste)->len - ( ((head *)liste)->last + size_last_node);
   
   return useful_mem;
