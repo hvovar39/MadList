@@ -6,10 +6,26 @@
 #define PROJET2019_H
 
 
-typedef union align_data align_data;
-typedef struct node node;
-typedef struct head head;
+typedef union align_data{
+  intmax_t a;
+  void *adr;
+  long double c;
+} align_data;
+ 
+typedef struct node{
+  ptrdiff_t next;
+  ptrdiff_t previous;
+  size_t len;
+  align_data data[];
+} node;
 
+typedef struct head{
+  void *memory;   //pointeur vers la mémoire
+  ptrdiff_t first;
+  ptrdiff_t last;
+  ptrdiff_t libre;
+  size_t len;
+} head;
 
 void *ld_create (size_t);
 

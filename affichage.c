@@ -1,4 +1,9 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <stddef.h>
+#include <assert.h>
+#include <string.h>
 
 #include "projet2019.h"
 #include "affichage.h"
@@ -10,8 +15,8 @@ FONCTIONS D'AFFICHAGE
 //affiche le noeud pointer par current (first sir current==liste)
 void print_node (void *liste, void *current) {
   if (current == liste) {
-    void *mem = liste->memory;
-    current = (align_data *)mem + liste->first;
+    void *mem = ((head*)liste)->memory;
+    current = (align_data *)mem + ((head*)liste)->first;
   }
   void *previous = ((align_data*)current) + ((node*)current)->previous;
   void *next = ((align_data*)current) + ((node*)current)->next;
