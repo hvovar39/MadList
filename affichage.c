@@ -25,14 +25,17 @@ void print_node (void *liste, void *current) {
   printf("node : %p, data : %p, previous : %p, next : %p\n", current, data, previous, next);
 }
 
-//affiche les donneés du noeud pointer par current (first si current==liste)
-void print_data (void *liste, void *current) {
-}
-
 //affiche tous les noeuds de la liste dans l'ordre de parcours
 void print_node_liste (void *liste) {
-}
+  if( ((head*)liste)->first == 0)
+    return 0;
 
-//affiche les données de la liste dans l'ordre de parcours
-void print_liste (void *liste) {
+  void * current = (align_data *)((head *)liste)->memory + ((head *)liste)->first;
+  print_node (liste, current);
+  
+  while ( ((node*)current)->next ) {
+    current = (align_data *)((node *)current) + ((node *)current)->next;
+    print_node (liste, current);
+  }
+    
 }

@@ -13,8 +13,8 @@
 HEADERS DES FONCTIONS AUXILIAIRES
 ==========================================*/
 static size_t nb_blocs (size_t);
-static size_t total_node_size (void*, void*);
-
+static void *test_memory (void *, size_t);
+  
 /*==========================================
 FONCTIONS DE GESTION DE LISTE
 ==========================================*/
@@ -99,17 +99,21 @@ size_t ld_get(void *liste, void *current, size_t len, void *val){
   size_t taille_data = sizeof ( *data );
 
   if (len > taille_data) {
-    memmove (val, ((node *)current)+1, taille_data);
+    memmove (val, data, taille_data);
     return taille_data;
   }
 
-  memmove (val, ((node *)current)+1, len);
+  memmove (val, data, len);
   return len;
 }
 
 //insère un nouveau nœud comme le premier élément de la liste
 
 void * ld_insert_first(void *liste, size_t len, void *p_data){
+    
+  if ( ((head *)liste)->next ) {
+  }   
+	
  return NULL;
 }
 
@@ -139,12 +143,12 @@ void * ld_delete_node(void*liste, void*n){
 
 //retourne le nombre d’octets libres dans la mémoire memory. Cela permettra de voir si la mémoire commence à être saturée
 
-size_t  ld_total_free_memory(void*liste){
-  size_t free_mem = total_node_size (liste, liste);
+size_t  ld_total_free_memory (void *liste){
+  size_t free_mem = ((head*)liste)->len;
   
   void *current = liste;
   while ( ld_next(liste, current) != NULL)
-    free_mem -= total_node_size (liste, current);
+    free_mem -= ((node*)current)->len;
       
   return free_mem;
 }
@@ -152,9 +156,10 @@ size_t  ld_total_free_memory(void*liste){
 //retourne la taille de la mémoire libre qui peut être encore utilisée pour créer de nouveauxnœuds (si on ne réutilise pas la mémoire libérée cela peut être beaucoup moins que ce queretourne la fonction précédente qui compte aussi la mémoire libre mais non utilisable).
 
 size_t  ld_total_useful_memory(void*liste){
-  size_t size_last_node = total_node_size ( liste, ((align_data *)((head *)liste)->memory) + ((head *)liste)->last );
+  void * last_node = (align_data *)((head *)liste)->memory + ((head *)liste)->last ;
+  size_t size_last_node = ((node *)last_node)->len;
   size_t useful_mem = ((head *)liste)->len - ( ((head *)liste)->last + size_last_node);
-  
+    
   return useful_mem;
 }
 
@@ -193,11 +198,10 @@ static size_t nb_blocs (size_t o){
   return result;
 }
 
-//retourne la taille TOTAL du noeud pointer par current (sizeof (node) + sizeof (data)). Si current==liste, retourne liste->len
-static size_t total_node_size (void *liste, void *current) {
-  if (liste == current)
-    return ((head*)liste)->len;
-  
-  size_t taille_data = sizeof ( *((node  *)current)->data);
-  return sizeof(node)+taille_data;
+//test si la mémoir peut contenir len octets de plus, sinon, rajoute 1000 octets
+static void *test_memory (void *liste, size_t len) {
+  void * result = NULL;
+  if ( total_usefull_memory (liste) <= len)
+     result = ld_add_memory (liste, 1000);
+  return result;
 }
