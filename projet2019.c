@@ -248,6 +248,7 @@ void * ld_insert_after (void *liste, void *n, size_t len, void *p_data){
 //supprime le noeud pointé par n. La fonction retourne liste quand la suppression réussit et NULL sinon.
 
 void * ld_delete_node(void*liste, void*n){
+  
  return NULL;
 }
 
