@@ -148,24 +148,107 @@ void * ld_insert_first(void *liste, size_t len, void *p_data){
 //insère un nouveau nœud comme le dernier élément de la liste
 
 void * ld_insert_last(void *liste, size_t len, void *p_data){
- return NULL;
+  ptrdiff_t next;
+  ptrdiff_t previous;
+  size_t total_len = len + sizeof(node);
+  void * new_node;
+
+  test_memory (liste, total_len); //on verifie que l'on est assez de memoire, et le cas échéant, on augmente la memoire
+  
+  if( ((head *)liste)->first ) { //liste contenant au moins 1 element
+    ptrdiff_t addrs_free_mem =  ((head *)liste)->len - nb_blocs (ld_total_useful_memory (liste));
+    new_node = ((head *)liste)->memory + addrs_free_mem; //on se place à la fin de la memoire utilisé
+    
+    void *current_last = (align_data *)( ((head *)liste)->memory + ((head *)liste)->last); //on se place au niveau du dernier actuel
+    ((node *)current_last)->next = ((align_data *)new_node) -  ((align_data *)current_last); //pour placer notre nouveau noeud derriere
+    
+    next =0; //le dernier n'a pas de suivant
+    previous = ((align_data *)current_last) - ((align_data *)new_node) ; 
+    ((head *)liste)->last = ((align_data *)new_node) - ((align_data *)((head *)liste)->memory); //on met notre nouveau noeud en dernier
+    
+  }
+  
+  else { //liste vide donc pas de prochain ou de précédant le dernier de la liste et aussi le premier
+    next = 0;
+    previous = 0;
+    new_node = (align_data *)( ((head *)liste)->memory + 1 );
+    ((head *)liste)->first = 1;
+    ((head *)liste)->last = 1;
+  }
+  
+  node noeud = { .next = next, .previous = previous, .len = nb_blocs (total_len) };
+  memmove (new_node, &noeud, sizeof(node));
+  memmove ((node *)new_node+1, p_data, len);
+
+  return new_node;
 }
 
 //insère un nouveau nœud dans la liste. Les paramètres len et p_data sont les mêmes que dans la fonction ld_insert_first. n est un pointeur vers un nœud, ld_insert_before insère le nouveau nœud avant le nœud n.
 
 void * ld_insert_before(void*liste, void*n, size_t len, void*p_data){
- return NULL;
+  ptrdiff_t next;
+  ptrdiff_t previous;
+  size_t total_len = len + sizeof(node);
+  void * new_node;
+
+  test_memory (liste, total_len); //on verifie que l'on est assez de memoire, et le cas échéant, on augmente la memoire
+  if( ((head *)liste)->first == (align_data *)((node *)n)-(align_data *)(((head *)liste)->memory) )
+      ld_insert_first(void*liste, size_t len, void*p_data);
+      
+  assert( ((head *)liste)->first ); //liste contenant au moins 2 element & n n'est pas le premier
+  ptrdiff_t addrs_free_mem =  ((head *)liste)->len - nb_blocs (ld_total_useful_memory (liste));
+  new_node = ((head *)liste)->memory + addrs_free_mem; //on se place à la fin de la memoire utilisé
+  
+  void *p = (align_data *)( ((node *)n) + ((node *)n)->previous); //on se place au niveau du precedant actuel de n
+  ((node *)p)->next = (align_data *)new_node - (align data *)p ; //le nouveau noeud
+  ((node *)n)->previous = ((align_data *)new_node) - ((align data *)n) ; //le nouveau noeud
+  
+  next = ((align_data *)n)-((align_data *)new_node) ; //le noeud n
+  previous = ((align_data *)p)-((align_data *)new_node) ; //le noeud p
+  
+  node noeud = { .next = next, .previous = previous, .len = nb_blocs (total_len) };
+  memmove (new_node, &noeud, sizeof(node));
+  memmove ((node *)new_node+1, p_data, len);
+
+  return new_node;
+
 }
 
 
 void * ld_insert_after (void *liste, void *n, size_t len, void *p_data){
- return NULL;
+  ptrdiff_t next;
+  ptrdiff_t previous;
+  size_t total_len = len + sizeof(node);
+  void * new_node;
+
+  test_memory (liste, total_len); //on verifie que l'on est assez de memoire, et le cas échéant, on augmente la memoire
+  if( ((head *)liste)->last == (align_data *)((node *)n)-(align_data *)(((head *)liste)->memory) )
+      ld_insert_last(void*liste, size_t len, void*p_data);
+      
+  assert( ((head *)liste)->first ); //liste contenant au moins 2 element & n n'est pas le dernier
+  ptrdiff_t addrs_free_mem =  ((head *)liste)->len - nb_blocs (ld_total_useful_memory (liste));
+  new_node = ((head *)liste)->memory + addrs_free_mem; //on se place à la fin de la memoire utilisé
+  
+  void *p = (align_data *)( ((node *)n) + ((node *)n)->next); //on se place au niveau du suivant actuel de n
+  ((node *)p)->previous = (align_data *)new_node - (align data *)p ; //new_node devient le precedent de p
+  ((node *)n)->next = ((align_data *)new_node) - ((align data *)n) ; //new_node devient le suivant de n
+  
+  previous = ((align_data *)n)-((align_data *)new_node) ; //le noeud n devient le precedent de new_node
+  next = ((align_data *)p)-((align_data *)new_node) ; //le noeud p devient le suivant de new_node
+  
+  node noeud = { .next = next, .previous = previous, .len = nb_blocs (total_len) };
+  memmove (new_node, &noeud, sizeof(node));
+  memmove ((node *)new_node+1, p_data, len);
+
+  return new_node;
+
 }
 
 
 //supprime le noeud pointé par n. La fonction retourne liste quand la suppression réussit et NULL sinon.
 
 void * ld_delete_node(void*liste, void*n){
+  
  return NULL;
 }
 
