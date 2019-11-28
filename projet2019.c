@@ -29,7 +29,7 @@ void *ld_create (size_t nboctets){
   liste->first = 0;
   liste->last = 0;
   liste->libre = 0;
-  liste->len = len;
+  liste->len = nb_blocs (nboctets);
   
   return liste;
 }
@@ -209,16 +209,25 @@ void*ld_add_memory(void*liste, size_t nboctets){
 
 void*ld_compactify(void*liste){
   size_t size_of_node = nb_blocs (sizeof (node));
-  void * new_liste = malloc (sizeof ( *((head*)liste)->memory) );
+  size_t size_of_liste = ((head*)liste)->len * sizeof (align_data)
+  void * new_liste = ld_create ( size_of_liste );
   if (new_liste == NULL)
     return NULL;
-
+  
   void *current = (align_data *)((head *)liste)->memory + ((head *)liste)->first;
-
-  while ( ((node *)current)->next ) {
+  do{
     size_t taille_data = ((node *)current)->len - size_of_node;
-    
+    ld_insert_last (new_liste, taille_data * sizeof (align_data), (node *)current+1);
+    current  = (align_data *)current + ((node *)current)->next;
+  } while ( ((node *)current)->next ); 
 
+  memmove ( ((head *)liste)->memory, ((head *)new_liste)->memory, size_of_liste);
+  ((head *)liste)->first = ((head*)new_liste)->first;
+  ((head *)liste)->last = ((head*)new_liste)->last;
+  ((head *)liste)->libre = ((head*)new_liste)->libre;
+  
+  ld_destroy (new_liste);
+  
   return NULL;
 }
 
