@@ -27,15 +27,15 @@ void print_node (void *liste, void *current) {
 
 //affiche tous les noeuds de la liste dans l'ordre de parcours
 void print_node_liste (void *liste) {
-  if( ((head*)liste)->first == 0)
-    return 0;
+  if( ((head*)liste)->first != 0) {
 
-  void * current = (align_data *)((head *)liste)->memory + ((head *)liste)->first;
-  print_node (liste, current);
-  
-  while ( ((node*)current)->next ) {
-    current = (align_data *)((node *)current) + ((node *)current)->next;
+    void * current = (align_data *)((head *)liste)->memory + ((head *)liste)->first;
     print_node (liste, current);
+  
+    while ( ((node*)current)->next ) {
+      current = (align_data *)((node *)current) + ((node *)current)->next;
+      print_node (liste, current);
+    }
   }
     
 }

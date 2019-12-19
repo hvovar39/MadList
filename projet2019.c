@@ -193,15 +193,15 @@ void * ld_insert_before(void*liste, void*n, size_t len, void*p_data){
 
   test_memory (liste, total_len); //on verifie que l'on est assez de memoire, et le cas échéant, on augmente la memoire
   if( ((head *)liste)->first == (align_data *)((node *)n)-(align_data *)(((head *)liste)->memory) )
-      ld_insert_first(void*liste, size_t len, void*p_data);
+      ld_insert_first (liste, len, p_data);
       
   assert( ((head *)liste)->first ); //liste contenant au moins 2 element & n n'est pas le premier
   ptrdiff_t addrs_free_mem =  ((head *)liste)->len - nb_blocs (ld_total_useful_memory (liste));
   new_node = ((head *)liste)->memory + addrs_free_mem; //on se place à la fin de la memoire utilisé
   
   void *p = (align_data *)( ((node *)n) + ((node *)n)->previous); //on se place au niveau du precedant actuel de n
-  ((node *)p)->next = (align_data *)new_node - (align data *)p ; //le nouveau noeud
-  ((node *)n)->previous = ((align_data *)new_node) - ((align data *)n) ; //le nouveau noeud
+  ((node *)p)->next = (align_data *)new_node - (align_data *)p ; //le nouveau noeud
+  ((node *)n)->previous = ((align_data *)new_node) - ((align_data *)n) ; //le nouveau noeud
   
   next = ((align_data *)n)-((align_data *)new_node) ; //le noeud n
   previous = ((align_data *)p)-((align_data *)new_node) ; //le noeud p
@@ -223,15 +223,15 @@ void * ld_insert_after (void *liste, void *n, size_t len, void *p_data){
 
   test_memory (liste, total_len); //on verifie que l'on est assez de memoire, et le cas échéant, on augmente la memoire
   if( ((head *)liste)->last == (align_data *)((node *)n)-(align_data *)(((head *)liste)->memory) )
-      ld_insert_last(void*liste, size_t len, void*p_data);
+      ld_insert_last(liste, len, p_data);
       
   assert( ((head *)liste)->first ); //liste contenant au moins 2 element & n n'est pas le dernier
   ptrdiff_t addrs_free_mem =  ((head *)liste)->len - nb_blocs (ld_total_useful_memory (liste));
   new_node = ((head *)liste)->memory + addrs_free_mem; //on se place à la fin de la memoire utilisé
   
   void *p = (align_data *)( ((node *)n) + ((node *)n)->next); //on se place au niveau du suivant actuel de n
-  ((node *)p)->previous = (align_data *)new_node - (align data *)p ; //new_node devient le precedent de p
-  ((node *)n)->next = ((align_data *)new_node) - ((align data *)n) ; //new_node devient le suivant de n
+  ((node *)p)->previous = (align_data *)new_node - (align_data *)p ; //new_node devient le precedent de p
+  ((node *)n)->next = ((align_data *)new_node) - ((align_data *)n) ; //new_node devient le suivant de n
   
   previous = ((align_data *)n)-((align_data *)new_node) ; //le noeud n devient le precedent de new_node
   next = ((align_data *)p)-((align_data *)new_node) ; //le noeud p devient le suivant de new_node
@@ -290,9 +290,9 @@ void*ld_add_memory(void*liste, size_t nboctets){
 
 //compacte la liste en mettant les nœuds au début de la mémoire avec une seule tranche de blocs libres à la fin de la mémoire.(La fonction devra sans doute allouer une nouvelle mémoire (de la même taille que l’ancienne) pour y recopier tous les nœuds l’un après l’autre dans l’ordre de parcours sur la liste.) La fonction retourne NULL en cas de problème (échec de malloc), sinon elle retourne liste.
 
-void*ld_compactify(void*liste){
+void *ld_compactify(void*liste){
   size_t size_of_node = nb_blocs (sizeof (node));
-  size_t size_of_liste = ((head*)liste)->len * sizeof (align_data)
+  size_t size_of_liste = ((head*)liste)->len * sizeof (align_data);
   void * new_liste = ld_create ( size_of_liste );
   if (new_liste == NULL)
     return NULL;
