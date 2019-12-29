@@ -133,7 +133,7 @@ void * ld_insert_first(void *liste, size_t len, void *p_data){
   else { //liste vide
     next = 0;
     previous = 0;
-    new_node = (align_data *)( ((head *)liste)->memory + 1 );
+    new_node = (align_data *)(((head *)liste)->memory) + 1;
     ((head *)liste)->first = 1;
     ((head *)liste)->last = 1;
   }
@@ -171,7 +171,7 @@ void * ld_insert_last(void *liste, size_t len, void *p_data){
   else { //liste vide donc pas de prochain ou de précédant le dernier de la liste et aussi le premier
     next = 0;
     previous = 0;
-    new_node = (align_data *)( ((head *)liste)->memory + 1 );
+    new_node = (align_data *)(((head *)liste)->memory) + 1;
     ((head *)liste)->first = 1;
     ((head *)liste)->last = 1;
   }
@@ -236,8 +236,11 @@ void * ld_insert_after (void *liste, void *n, size_t len, void *p_data){
   previous = ((align_data *)n)-((align_data *)new_node) ; //le noeud n devient le precedent de new_node
   next = ((align_data *)p)-((align_data *)new_node) ; //le noeud p devient le suivant de new_node
   
-  node noeud = { .next = next, .previous = previous, .len = nb_blocs (total_len) };
-  memmove (new_node, &noeud, sizeof(node));
+  /*node noeud = { .next = next, .previous = previous, .len = nb_blocs (total_len) };
+    memmove (new_node, &noeud, sizeof(node));*/
+  ((node *)new_node)->next = next;
+  ((node *)new_node)->previous = previous;
+  ((node *)new_node)->len = nb_blocs (total_len);
   memmove ((node *)new_node+1, p_data, len);
 
   return new_node;
@@ -276,7 +279,7 @@ size_t  ld_total_useful_memory (void*liste){
 
 //agrandit la mémoire de nb_octets. Comme pour la création de la liste, on arrondit nb_octets vers un multiple de sizeof(align_data). Il est impossible de diminuer la taille de mémoire. La fonction retourne NULL en cas deproblème et liste sinon.
 
-void*ld_add_memory(void*liste, size_t nboctets){
+void *ld_add_memory (void *liste, size_t nboctets){
   size_t taille = ((head *)liste)->len + nb_blocs (nboctets);
   void * temp = realloc ( ((head *)liste)->memory, taille * sizeof (align_data));
 

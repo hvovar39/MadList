@@ -19,6 +19,11 @@ int ajout_noeuds (void *, data_type, size_t);
 
 int main(){
   srand (time (NULL));
+  int err = lancement_sequence_test (1, NBR_INT, 10, 10);
+
+  if (err != 0)
+    affichage_erreur (err);
+  
   return 0;
 }
 
@@ -61,7 +66,7 @@ size_t random_var (data_type t, void *dest) {
   int i;
   double d;
   char c;
-  char *s;
+  char *s = malloc (sizeof(char));
   
   switch (t) {
   case 0 : //int
@@ -88,7 +93,7 @@ size_t random_var (data_type t, void *dest) {
     
   case 3 : //string
     taille = (rand()%100)+1;
-    s = malloc (taille*sizeof(char));
+    s = realloc (s, taille*sizeof(char));
 
     for (int i = 0; i<taille-1; i++)
       random_var (2, s+i);

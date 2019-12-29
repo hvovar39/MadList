@@ -25,6 +25,7 @@ void print_node (void *liste, void *current) {
   printf("node : %p, data : %p, previous : %p, next : %p\n", current, data, previous, next);
 }
 
+
 //affiche tous les noeuds de la liste dans l'ordre de parcours
 void print_node_liste (void *liste) {
   if( ((head*)liste)->first != 0) {
@@ -38,4 +39,20 @@ void print_node_liste (void *liste) {
     }
   }
     
+}
+
+
+void affichage_erreur (int i) {
+  assert (i>0);
+  switch (i) {
+    
+  case 1 :
+    printf ("Erreur dans LD_CREATE\n");
+    break;
+
+  case 2 :
+    printf ("Erreur dans LD_FIRST\n");
+    break;
+  }
+
 }
