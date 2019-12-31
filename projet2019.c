@@ -157,13 +157,11 @@ void * ld_insert_last(void *liste, size_t len, void *p_data){
   test_memory (liste, total_len); //on verifie que l'on est assez de memoire, et le cas échéant, on augmente la memoire
   
   if( ((head *)liste)->first ) {//liste contenant au moins 1 element
-    printf ("in\n");
-    printf ("%lu\n", (ld_total_useful_memory (liste)));
     ptrdiff_t addrs_free_mem =  ((head *)liste)->len - nb_blocs (ld_total_useful_memory (liste));
-    new_node = ((head *)liste)->memory + addrs_free_mem; //on se place à la fin de la memoire utilisé
+    new_node = (align_data*)((head *)liste)->memory + addrs_free_mem; //on se place à la fin de la memoire utilisé
     
-    void *current_last = (align_data *)( ((head *)liste)->memory + ((head *)liste)->last); //on se place au niveau du dernier actuel
-    ((node *)current_last)->next = ((align_data *)new_node) -  ((align_data *)current_last); //pour placer notre nouveau noeud derriere
+    void *current_last = (align_data *)((head *)liste)->memory + ((head *)liste)->last; //on se place au niveau du dernier actuel
+    ((node *)current_last)->next = (align_data *)new_node -  (align_data *)current_last; //pour placer notre nouveau noeud derriere
     
     next =0; //le dernier n'a pas de suivant
     previous = ((align_data *)current_last) - ((align_data *)new_node) ; 
@@ -228,10 +226,11 @@ void * ld_insert_after (void *liste, void *n, size_t len, void *p_data){
   size_t total_len = len + sizeof(node);
   void * new_node;
 
-  test_memory (liste, total_len); //on verifie que l'on est assez de memoire, et le cas échéant, on augmente la memoire
   if( ((head *)liste)->last == (align_data *)n - (align_data *)(((head *)liste)->memory) )
       return ld_insert_last(liste, len, p_data);
-      
+
+   test_memory (liste, total_len); //on verifie que l'on est assez de memoire, et le cas échéant, on augmente la memoire
+   
   assert( ((head *)liste)->first ); //liste contenant au moins 2 element & n n'est pas le dernier
   ptrdiff_t addrs_free_mem =  ((head *)liste)->len - nb_blocs (ld_total_useful_memory (liste));
   new_node = ((head *)liste)->memory + addrs_free_mem; //on se place à la fin de la memoire utilisé
@@ -278,10 +277,9 @@ size_t  ld_total_free_memory (void *liste){
 
 size_t  ld_total_useful_memory (void*liste){
   size_t result = ((head*)liste)->len * sizeof(align_data);
-
   if( ((head*)liste)->first) {
     void * last_node = last_in_mem (liste);
-    result -= ((char *)last_node + ((node*)last_node)->len) - (char *)((head*)liste)->memory;
+    result -= (char *)((align_data *)last_node + ((node*)last_node)->len) - (char *)((head*)liste)->memory;
   }
 
   return result;
@@ -346,8 +344,10 @@ static size_t nb_blocs (size_t o){
 //test si la mémoir peut contenir len octets de plus, sinon, rajoute 1000 octets
 static void *test_memory (void *liste, size_t len) {
   void * result = NULL;
-  while( ld_total_useful_memory (liste) <= len)
-     result = ld_add_memory (liste, 1000);
+  while( ld_total_useful_memory (liste) <= len){
+    printf ("total usefull mem : %lu\n", ld_total_useful_memory (liste));
+    result = ld_add_memory (liste, 1000);
+  }
   return result;
 }
 
@@ -357,10 +357,10 @@ static void *last_in_mem (void *liste){
 
   ptrdiff_t max = ((head *)liste)->first;
   ptrdiff_t temp;
-  void *n = (align_data *)((head *)liste)->memory + ((head*)liste)->first;
+  void *n = (align_data *)(((head *)liste)->memory) + ((head*)liste)->first;
 
-  while ( ((head *)liste)->last != ( (align_data *)n - (align_data *)((head *)liste)->memory)) {
-    n = n + ((node *)n)->next;
+  while ( ((node *)n)->next != 0 ) {
+    n = (align_data *)n + ((node *)n)->next;
     temp = (align_data *)n - (align_data *)((head *)liste)->memory;
     if (temp >max)
       max = temp;
