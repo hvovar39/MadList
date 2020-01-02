@@ -149,16 +149,21 @@ int ajout_noeuds (void *liste, data_type t, size_t taille_liste) {
   if(size_l !=0) {
     size_data = random_var(t, data);
     node = ld_insert_first (liste, size_data, data);
-    if( node == NULL)
+    if( node == NULL){
+      free(data);
       return 8;
+    }
   }
   
   for (int i = 1; i<size_l; i++) {
     size_data = random_var(t, data);
     node = ld_insert_after (liste, node, size_data, data);
-    if( node == NULL)
+    if( node == NULL){
+      free(data);
       return 11;
+    }
   }
-  
+
+  free(data);
   return 0;
 }
