@@ -56,3 +56,25 @@ void affichage_erreur (int i) {
   }
 
 }
+
+int affichage_noeuds_int (void *liste) {
+  int i = 1;
+  void *current = ld_first (liste);
+  if (current == NULL)
+      return 2;
+  void *data = malloc (sizeof(int));
+
+  while ( ((node *)current)->next ) {
+    ld_get (liste, current, sizeof(int), data);
+    printf ("noeud %d : %d\n", i++, *(int *)data);
+    current = ld_next (liste, current);
+    if (current == NULL)
+      return 4;
+  }
+
+  ld_get (liste, current, sizeof(int), data);
+  printf ("noeud %d : %d\n", i++, *(int *)data);
+
+  free (data);
+  return 0;
+}

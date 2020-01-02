@@ -50,9 +50,17 @@ static int lancement_sequence_test (int nbr_test, data_type t, size_t taille_lis
     printf ("CREATION DE LA LISTE -> OK\n");
     
     int res = ajout_noeuds (liste, t, taille_liste);
-    if (res !=0)
-      return res;  
+    if (res !=0){
+      ld_destroy (liste);
+      return res;
+    }
 
+    res = affichage_noeuds_int (liste);
+    if (res != 0){
+      ld_destroy (liste);
+      return res;
+    }
+    
     ld_destroy (liste);
   } 
   return 0;
@@ -151,25 +159,6 @@ int ajout_noeuds (void *liste, data_type t, size_t taille_liste) {
     if( node == NULL)
       return 11;
   }
-
-  int pos_noeud = rand()%taille_liste;
-  for (int i = 1; i<pos_noeud; i++) {
-    node = ld_previous (liste, node);
-    if (node == NULL)
-      return 5;
-  }
-
-  node = ld_next (liste, node);
-  if (node == NULL)
-    return 4;
-
-  node = ld_insert_before (liste, node, 7*sizeof(char), "BEFORE");
-  if (node == NULL)
-    return 10;
-  
-  node = ld_insert_last (liste, 5*sizeof(char), "LAST");
-  if (node == NULL)
-    return 9;
   
   return 0;
 }
