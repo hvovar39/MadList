@@ -236,11 +236,36 @@ void * ld_insert_after (void *liste, void *n, size_t len, void *p_data){
 }
 
 
-//supprime le noeud pointé par n. La fonction retourne liste quand la suppression réussit et NULL sinon.
+//supprime le noeud pointé par n. La fonction retourne liste quand la suppression réussit et NULL sinon. On suppose que le noeud n est forcement dans la liste et donc que la liste est non vide.
 
 void * ld_delete_node(void*liste, void*n){
+  void * next;
+  void * previous;
+
+  if(((node *)n)->previous == 0 && ((node *)n)->next == 0){
+    ((head * )liste)->first=0;
+    ((head*)liste)->last=0;
+  }
   
- return NULL;
+  else if (((node *)n)->previous == 0){
+    next =ld_next(liste,n);
+    ((node * )next)->previous = 0;
+    ((head * )liste)->first=next - ((head * )list)->memory;
+  }
+  
+  else if (((node *)n)->next == 0){
+    previous =ld_previous(liste,n);
+    ((node * )previous)->next = 0;
+    ((head*)liste)->last=((align_data *)previous) - ((align_data *)((head * )list)->memory);
+  }
+  
+  else {
+    next =ld_next(liste,n);
+    previous =ld_previous(liste,n);
+    ((node * )next)->previous =(align_date*)previous-(align_data*)next ;
+    ((node * )previous)->next = (align_date*)next-(align_data*)previous;
+  }
+  return liste;
 }
 
 //retourne le nombre d’octets libres dans la mémoire memory. Cela permettra de voir si la mémoire commence à être saturée
