@@ -16,6 +16,7 @@ static double puissance (double, int);
 size_t random_var (data_type, void*);
 static int lancement_sequence_test (int, data_type, size_t, size_t);
 int ajout_noeuds (void *, data_type, size_t);
+int lancement_sequence_action (void *, size_t, int);
 
 int main(){
   srand (time (NULL));
@@ -35,6 +36,8 @@ return 0 si les tests sont ok*/
 static int lancement_sequence_test (int nbr_test, data_type t, size_t taille_liste, size_t taille_mem_init) {
   assert (nbr_test>0);
   void *liste;
+  char c;
+  int freq, nbr_action;
   
   
   for (int i = 0; i<nbr_test; i++) {
@@ -60,7 +63,30 @@ static int lancement_sequence_test (int nbr_test, data_type t, size_t taille_lis
       ld_destroy (liste);
       return res;
     }
-    
+
+    printf("Voulez-vous lancer la séquence d'actions aléatoires (insertions/suppressions) ? (y/n)\n");
+    scanf("%c", &c);
+    if (c == 'y') {
+      printf("Entrez la fréquence d'insertion : \n");
+      scanf("%d", &freq);
+      printf("Entrez le nombre d'actions à éffectué : \n");
+      scanf("%d", &nbr_action);
+      res = lancement_sequence_action (liste, nbr_action, freq);
+      if (res != 0) {
+	ld_destroy(liste);
+	return res;
+      }
+    }
+
+    printf("mémoire libre : %lu\n", ld_total_free_memory(liste));
+    printf("mémoire utilisable avant compactify : %lu\n", ld_total_useful_memory(liste));
+    void *temp = ld_compactify (liste);
+    if ( temp == NULL) {
+      ld_destroy (liste);
+      return 6;
+    }
+    printf("mémoire utilisable aprés compactify : %lu\n", ld_total_useful_memory(liste));
+	   
     ld_destroy (liste);
   } 
   return 0;
@@ -165,5 +191,49 @@ int ajout_noeuds (void *liste, data_type t, size_t taille_liste) {
   }
 
   free(data);
+  return 0;
+}
+
+
+int lancement_sequence_action (void *liste, size_t nbr_op, int freq_inser) {
+  int oper, pos;
+  void *n = liste;
+  void *data = malloc (100*sizeof(char));
+  size_t taille_data;
+
+  printf("taille liste : %lu\n", ((head *)liste)->nbr_noeud);  
+  
+  for (int i = 0; i<nbr_op; i++) {
+    printf ("action %d\n", i);
+    oper = rand() % freq_inser;
+    pos = rand() % ((head *)liste)->nbr_noeud;
+
+    for (int j = 0; j<pos+1; j++)
+      n = ld_next (liste, n);
+ 
+    if (oper) {
+      printf("insertion\n");
+      taille_data = random_var (ANY, data);
+      n = ld_insert_after (liste, n, taille_data, data);
+      if (n == NULL) {
+	free(data);
+	return 11;
+      }
+      printf("taille liste : %lu\n", ((head *)liste)->nbr_noeud);
+      
+    } else {
+      printf ("deletion\n");
+      n = ld_delete_node (liste, n);
+      if (n == NULL){
+	free (data);
+	return 12;
+      }
+      printf("taille liste : %lu\n", ((head *)liste)->nbr_noeud);
+    
+    }
+
+    n = liste;
+  }
+
   return 0;
 }

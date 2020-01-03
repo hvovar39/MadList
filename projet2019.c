@@ -31,6 +31,7 @@ void *ld_create (size_t nboctets){
   liste->last = 0;
   liste->libre = 0;
   liste->len = nb_blocs (nboctets);
+  liste->nbr_noeud = 0;
   
   return liste;
 }
@@ -56,9 +57,13 @@ void *ld_last(void *liste){
 //current est un pointeur qui pointe soit vers head(i.e.liste==current) soit vers un nœud. Dans le premier cas,ld_next retourne la valeur de ld_first(liste). Dans le deuxième cas elle retourne le pointeur vers le nœud qui suit current sur la liste. Si current pointe vers le dernier nœud sur la liste, la fonction retourne NULL. Si la liste est vide et liste==current, la fonction retourne NULL
 
 void *ld_next(void *liste, void *current){
-  if ( liste == current )
+  if ( liste == current ){
+    if ( ((head *)liste)->first == 0)
+      return NULL;
+    else
       return ld_first(liste);
-  else if ( ((head*)liste)->first == 0 || ((node*)current)->next == 0)
+    
+  } else if ( ((node*)current)->next == 0 )
     return NULL;
   else
     return (align_data *)current + ((node *)current)->next; 
@@ -130,6 +135,7 @@ void * ld_insert_first(void *liste, size_t len, void *p_data){
   node noeud = { .next = next, .previous = previous, .len = nb_blocs (total_len) };
   memmove (new_node, &noeud, sizeof(node));
   memmove ((node *)new_node+1, p_data, len);
+  ((head *)liste)->nbr_noeud ++;
 
   return new_node;
 }
@@ -168,6 +174,7 @@ void * ld_insert_last(void *liste, size_t len, void *p_data){
   node noeud = { .next = next, .previous = previous, .len = nb_blocs (total_len) };
   memmove (new_node, &noeud, sizeof(node));
   memmove ((node *)new_node+1, p_data, len);
+  ((head *)liste)->nbr_noeud ++;
 
   return new_node;
 }
@@ -200,6 +207,7 @@ void * ld_insert_before(void*liste, void*n, size_t len, void*p_data){
   node noeud = { .next = next, .previous = previous, .len = nb_blocs (total_len) };
   memmove (new_node, &noeud, sizeof(node));
   memmove ((node *)new_node+1, p_data, len);
+  ((head *)liste)->nbr_noeud ++;
 
   return new_node;
 }
@@ -231,6 +239,7 @@ void * ld_insert_after (void *liste, void *n, size_t len, void *p_data){
   node noeud = { .next = next, .previous = previous, .len = nb_blocs (total_len) };
   memmove (new_node, &noeud, sizeof(node));
   memmove ((node *)new_node+1, p_data, len);
+  ((head *)liste)->nbr_noeud ++;
 
   return new_node;
 }
@@ -250,21 +259,23 @@ void * ld_delete_node(void*liste, void*n){
   else if (((node *)n)->previous == 0){
     next =ld_next(liste,n);
     ((node * )next)->previous = 0;
-    ((head * )liste)->first=next - ((head * )list)->memory;
+    ((head * )liste)->first=next - ((head * )liste)->memory;
   }
   
   else if (((node *)n)->next == 0){
     previous =ld_previous(liste,n);
     ((node * )previous)->next = 0;
-    ((head*)liste)->last=((align_data *)previous) - ((align_data *)((head * )list)->memory);
+    ((head*)liste)->last=((align_data *)previous) - ((align_data *)((head * )liste)->memory);
   }
   
   else {
     next =ld_next(liste,n);
     previous =ld_previous(liste,n);
-    ((node * )next)->previous =(align_date*)previous-(align_data*)next ;
-    ((node * )previous)->next = (align_date*)next-(align_data*)previous;
+    ((node * )next)->previous =(align_data*)previous-(align_data*)next ;
+    ((node * )previous)->next = (align_data*)next-(align_data*)previous;
   }
+  ((head *)liste)->nbr_noeud --;
+
   return liste;
 }
 
@@ -273,9 +284,13 @@ void * ld_delete_node(void*liste, void*n){
 size_t  ld_total_free_memory (void *liste){
   size_t free_mem = ((head*)liste)->len;
   
-  void *current = liste;
-  while ( ld_next(liste, current) != NULL)
+  void *current = ld_first (liste);
+  free_mem -= ((node *)current)->len; 
+
+  while ( ((node *)current)->next != 0){
+    current = ld_next (liste, current);
     free_mem -= ((node*)current)->len;
+  }
       
   return free_mem * sizeof (align_data);
 }
@@ -296,15 +311,19 @@ size_t  ld_total_useful_memory (void*liste){
 //agrandit la mémoire de nb_octets. Comme pour la création de la liste, on arrondit nb_octets vers un multiple de sizeof(align_data). Il est impossible de diminuer la taille de mémoire. La fonction retourne NULL en cas deproblème et liste sinon.
 
 void *ld_add_memory (void *liste, size_t nboctets){
-  size_t taille = nb_blocs ( ((head *)liste)->len + nboctets );
+  size_t taille = nb_blocs (((head *)liste)->len + nboctets );
   void * temp = realloc ( ((head *)liste)->memory, taille * sizeof (align_data));
 
+  printf("LISTE LEN : %lu\n", ((head *)liste)->len);  
+  
   if (temp != NULL){
     ((head *)liste)->memory = temp;
     ((head *)liste)->len = taille;
+    printf("LISTE LEN : %lu\n", ((head *)liste)->len);
     return liste;
   }
- return NULL;
+    
+  return NULL;
 }
 
 //compacte la liste en mettant les nœuds au début de la mémoire avec une seule tranche de blocs libres à la fin de la mémoire.(La fonction devra sans doute allouer une nouvelle mémoire (de la même taille que l’ancienne) pour y recopier tous les nœuds l’un après l’autre dans l’ordre de parcours sur la liste.) La fonction retourne NULL en cas de problème (échec de malloc), sinon elle retourne liste.
@@ -312,6 +331,8 @@ void *ld_add_memory (void *liste, size_t nboctets){
 void *ld_compactify(void*liste){
   size_t size_of_liste = ((head*)liste)->len;
   void * new_liste = ld_create ( size_of_liste );
+  if (new_liste == NULL)
+    return NULL;
   size_t taille_data;
   
   if (new_liste == NULL)
@@ -319,7 +340,7 @@ void *ld_compactify(void*liste){
   
   void *current = (align_data *)((head *)liste)->memory + ((head *)liste)->first;
   do{
-    taille_data = (((node *)current)->len * sizeof(align_data *)) - sizeof(node);
+    taille_data = (((node *)current)->len * sizeof(align_data)) - sizeof(node);
     ld_insert_last (new_liste, taille_data, (node *)current+1);
     current  = (align_data *)current + ((node *)current)->next;
   } while ( ((node *)current)->next ); 
@@ -331,7 +352,7 @@ void *ld_compactify(void*liste){
   
   ld_destroy (new_liste);
   
-  return NULL;
+  return liste;
 }
 
 

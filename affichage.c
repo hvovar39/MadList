@@ -33,8 +33,8 @@ void print_node_liste (void *liste) {
     void * current = (align_data *)((head *)liste)->memory + ((head *)liste)->first;
     print_node (liste, current);
   
-    while ( ((node*)current)->next ) {
-      current = (align_data *)((node *)current) + ((node *)current)->next;
+    while ( ((node*)current)->next != 0) {
+      current = ld_next(liste, current);
       print_node (liste, current);
     }
   }

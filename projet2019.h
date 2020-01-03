@@ -25,6 +25,7 @@ typedef struct head{
   ptrdiff_t last;
   ptrdiff_t libre;
   size_t len;
+  size_t nbr_noeud;
 } head;
 
 void *ld_create (size_t);                                                //1
