@@ -53,6 +53,62 @@ void affichage_erreur (int i) {
   case 2 :
     printf ("Erreur dans LD_FIRST\n");
     break;
+
+  case 3 :
+    printf ("Erreur dans LD_LAST\n");
+    break;
+
+  case 4 :
+    printf ("Erreur dans LD_NEXT\n");
+    break;
+    
+  case 5 :
+    printf ("Erreur dans LD_PREVIOUS\n");
+    break;
+
+  case 6 :
+    printf ("Erreur dans LD_DESTROY\n");
+    break;
+
+  case 7 :
+    printf ("Erreur dans LD_GET\n");
+    break;
+
+  case 8 :
+    printf ("Erreur dans LD_INSERT_FIRST\n");
+    break;
+
+  case 9 :
+    printf ("Erreur dans LD_INSERT_LAST\n");
+    break;
+
+  case 10 :
+    printf ("Erreur dans LD_INSERT_BESFORE\n");
+    break;
+
+  case 11 :
+    printf ("Erreur dans LD_INSERT_AFTER\n");
+    break;
+
+  case 12 :
+    printf ("Erreur dans LD_DELETE_NODE\n");
+    break;
+
+  case 13 :
+    printf ("Erreur dans LD_TOTAL_FREE_MEMORY\n");
+    break;
+
+  case 14 :
+    printf ("Erreur dans LD_TOTAL_USEFUL_MEMORY\n");
+    break;
+    
+  case 15 :
+    printf ("Erreur dans LD_ADD_MEMORY\n");
+    break;
+
+  case 16 :
+    printf ("Erreur dans LD_COMPACTIFY\n");
+    break;
   }
 
 }
