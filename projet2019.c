@@ -109,7 +109,7 @@ size_t ld_get(void *liste, void *current, size_t len, void *val){
 void * ld_insert_first(void *liste, size_t len, void *p_data){
   ptrdiff_t next;
   ptrdiff_t previous;
-  size_t total_len = len + sizeof(node);
+  size_t total_len = (sizeof(align_data) * nb_blocs(len)) + sizeof(node);
   void * new_node;
 
   test_memory (liste, total_len, ((head *)liste)->memory ); //on verifie que l'on est assez de memoire, et le cas échéant, on augmente la memoire
@@ -147,7 +147,7 @@ void * ld_insert_first(void *liste, size_t len, void *p_data){
 void * ld_insert_last(void *liste, size_t len, void *p_data){
   ptrdiff_t next;
   ptrdiff_t previous;
-  size_t total_len = len + sizeof(node);
+  size_t total_len =  (sizeof(align_data) * nb_blocs(len)) + sizeof(node);
   void * new_node;
 
   test_memory (liste, total_len, ((head *)liste)->memory ); //on verifie que l'on est assez de memoire, et le cas échéant, on augmente la memoire
@@ -186,14 +186,13 @@ void * ld_insert_last(void *liste, size_t len, void *p_data){
 void * ld_insert_before(void*liste, void*n, size_t len, void*p_data){
   ptrdiff_t next;
   ptrdiff_t previous;
-  size_t total_len = len + sizeof(node);
+  size_t total_len = (sizeof(align_data) * nb_blocs(len)) + sizeof(node);
   void * new_node;
 
-  n = test_memory (liste, total_len, n); //on verifie que l'on est assez de memoire, et le cas échéant, on augmente la memoire
-
-  if( ((head *)liste)->first == (align_data *)n - (align_data *)((head *)liste)->memory )
+  if( ((node *)n)->previous == 0 )
     return ld_insert_first (liste, len, p_data);
-      
+
+  n = test_memory (liste, total_len, n); //on verifie que l'on est assez de memoire, et le cas échéant, on augmente la memoire
   assert( ((head *)liste)->first ); //liste contenant au moins 2 element & n n'est pas le premier
   
   ptrdiff_t addrs_free_mem =  ((head *)liste)->len - nb_blocs (ld_total_useful_memory (liste)) + 1;
@@ -218,10 +217,10 @@ void * ld_insert_before(void*liste, void*n, size_t len, void*p_data){
 void * ld_insert_after (void *liste, void *n, size_t len, void *p_data){
   ptrdiff_t next;
   ptrdiff_t previous;
-  size_t total_len = len + sizeof(node);
+  size_t total_len =  (sizeof(align_data) * nb_blocs(len)) + sizeof(node);
   void * new_node;
 
-  if( ((head *)liste)->last == (align_data *)n - (align_data *)((head *)liste)->memory )
+  if( ((node *)n)->next == 0)
     return ld_insert_last(liste, len, p_data);
 
   n = test_memory (liste, total_len, n); //on verifie que l'on est assez de memoire, et le cas échéant, on augmente la memoire

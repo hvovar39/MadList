@@ -113,6 +113,8 @@ void affichage_erreur (int i) {
 
 }
 
+
+
 int affichage_noeuds_int (void *liste) {
   int i = 1;
   void *current = ld_first (liste);
@@ -130,6 +132,72 @@ int affichage_noeuds_int (void *liste) {
 
   ld_get (liste, current, sizeof(int), data);
   printf ("noeud %d : %d\n", i++, *(int *)data);
+
+  free (data);
+  return 0;
+}
+
+int affichage_noeuds_double (void *liste) {
+  int i = 1;
+  void *current = ld_first (liste);
+  if (current == NULL)
+    return 2;
+  void *data = malloc (sizeof(double));
+
+  while ( ((node *)current)->next ) {
+    ld_get (liste, current, sizeof(double), data);
+    printf ("noeud %d : %f\n", i++, *(double *)data);
+    current = ld_next (liste, current);
+    if (current == NULL)
+      return 4;
+  }
+
+  ld_get (liste, current, sizeof(double), data);
+  printf ("noeud %d : %f\n", i++, *(double *)data);
+
+  free (data);
+  return 0;
+}
+
+int affichage_noeuds_char (void *liste) {
+  int i = 1;
+  void *current = ld_first (liste);
+  if (current == NULL)
+      return 2;
+  void *data = malloc (sizeof(char));
+
+  while ( ((node *)current)->next ) {
+    ld_get (liste, current, sizeof(char), data);
+    printf ("noeud %d : %c\n", i++, *(char *)data);
+    current = ld_next (liste, current);
+    if (current == NULL)
+      return 4;
+  }
+
+  ld_get (liste, current, sizeof(char), data);
+  printf ("noeud %d : %c\n", i++, *(char *)data);
+
+  free (data);
+  return 0;
+}
+
+int affichage_noeuds_string (void *liste) {
+  int i = 1;
+  void *current = ld_first (liste);
+  if (current == NULL)
+    return 2;
+  void *data = malloc (sizeof(char)*100);
+  
+  while ( ((node *)current)->next ) {
+    ld_get (liste, current, sizeof(char)*100, data);
+    printf ("noeud %d : %s\n", i++, (char *)data);
+    current = ld_next (liste, current);
+    if (current == NULL)
+      return 4;
+  }
+
+  ld_get (liste, current, sizeof(char)*100, data);
+  printf ("noeud %d : %s\n", i++, (char *)data);
 
   free (data);
   return 0;
