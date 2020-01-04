@@ -7,7 +7,7 @@ LDLIBS = -lm
 ALL = test_00
 all : $(ALL)
 
-projet2019.o : projet2019.c projet2019.h
+projet2019.o : projet2019.c projet2019.h affichage.h
 
 affichage.o : affichage.c affichage.h projet2019.h
 

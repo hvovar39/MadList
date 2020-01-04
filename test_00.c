@@ -63,8 +63,10 @@ static int lancement_sequence_test (int nbr_test, data_type t, size_t taille_lis
       ld_destroy (liste);
       return res;
     }
-
-    printf("Voulez-vous lancer la séquence d'actions aléatoires (insertions/suppressions) ? (y/n)\n");
+    print_node_liste (liste);
+    printf ("nombre de noeuds de la liste : %lu\n", ((head *)liste)->nbr_noeud);
+    
+    printf("\nVoulez-vous lancer la séquence d'actions aléatoires (insertions/suppressions) ? (y/n)\n");
     scanf("%c", &c);
     if (c == 'y') {
       printf("Entrez la fréquence d'insertion : \n");
@@ -78,7 +80,7 @@ static int lancement_sequence_test (int nbr_test, data_type t, size_t taille_lis
       }
     }
 
-    printf("mémoire libre : %lu\n", ld_total_free_memory(liste));
+    printf("\n\nLANCEMENT DE COMPACTIFY\nmémoire libre : %lu\n", ld_total_free_memory(liste));
     printf("mémoire utilisable avant compactify : %lu\n", ld_total_useful_memory(liste));
     void *temp = ld_compactify (liste);
     if ( temp == NULL) {
@@ -86,7 +88,8 @@ static int lancement_sequence_test (int nbr_test, data_type t, size_t taille_lis
       return 6;
     }
     printf("mémoire utilisable aprés compactify : %lu\n", ld_total_useful_memory(liste));
-	   
+
+    print_node_liste (liste);
     ld_destroy (liste);
   } 
   return 0;
@@ -200,17 +203,16 @@ int lancement_sequence_action (void *liste, size_t nbr_op, int freq_inser) {
   void *n = liste;
   void *data = malloc (100*sizeof(char));
   size_t taille_data;
-
-  printf("taille liste : %lu\n", ((head *)liste)->nbr_noeud);  
   
   for (int i = 0; i<nbr_op; i++) {
     printf ("action %d\n", i);
     oper = rand() % freq_inser;
-    pos = rand() % ((head *)liste)->nbr_noeud;
+    pos = rand() % (((head *)liste)->nbr_noeud -1);
+    pos ++;
 
-    for (int j = 0; j<pos+1; j++)
+    for (int j = 0; j<pos; j++)
       n = ld_next (liste, n);
- 
+    
     if (oper) {
       printf("insertion\n");
       taille_data = random_var (ANY, data);
@@ -219,7 +221,6 @@ int lancement_sequence_action (void *liste, size_t nbr_op, int freq_inser) {
 	free(data);
 	return 11;
       }
-      printf("taille liste : %lu\n", ((head *)liste)->nbr_noeud);
       
     } else {
       printf ("deletion\n");
@@ -228,8 +229,7 @@ int lancement_sequence_action (void *liste, size_t nbr_op, int freq_inser) {
 	free (data);
 	return 12;
       }
-      printf("taille liste : %lu\n", ((head *)liste)->nbr_noeud);
-    
+      
     }
 
     n = liste;

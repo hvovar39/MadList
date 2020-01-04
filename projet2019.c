@@ -5,7 +5,9 @@
 #include <assert.h>
 #include <string.h>
 
+
 #include "projet2019.h"
+#include "affichage.h"
  
 
 
@@ -13,7 +15,7 @@
 HEADERS DES FONCTIONS AUXILIAIRES
 ==========================================*/
 static size_t nb_blocs (size_t);
-static void *test_memory (void *, size_t);
+static void *test_memory (void *, size_t, void *);
 static void *last_in_mem (void *);
   
 /*==========================================
@@ -55,7 +57,6 @@ void *ld_last(void *liste){
 }
 
 //current est un pointeur qui pointe soit vers head(i.e.liste==current) soit vers un nœud. Dans le premier cas,ld_next retourne la valeur de ld_first(liste). Dans le deuxième cas elle retourne le pointeur vers le nœud qui suit current sur la liste. Si current pointe vers le dernier nœud sur la liste, la fonction retourne NULL. Si la liste est vide et liste==current, la fonction retourne NULL
-
 void *ld_next(void *liste, void *current){
   if ( liste == current ){
     if ( ((head *)liste)->first == 0)
@@ -63,8 +64,9 @@ void *ld_next(void *liste, void *current){
     else
       return ld_first(liste);
     
-  } else if ( ((node*)current)->next == 0 )
+  } else if ( ((node*)current)->next == 0 ) {
     return NULL;
+  }
   else
     return (align_data *)current + ((node *)current)->next; 
 }
@@ -110,7 +112,7 @@ void * ld_insert_first(void *liste, size_t len, void *p_data){
   size_t total_len = len + sizeof(node);
   void * new_node;
 
-  test_memory (liste, total_len); //on verifie que l'on est assez de memoire, et le cas échéant, on augmente la memoire
+  test_memory (liste, total_len, ((head *)liste)->memory ); //on verifie que l'on est assez de memoire, et le cas échéant, on augmente la memoire
   
   if( ((head *)liste)->first ) { //liste contenant au moins 1 element
     ptrdiff_t addrs_free_mem =  ((head *)liste)->len - nb_blocs (ld_total_useful_memory (liste)) + 1;
@@ -148,7 +150,7 @@ void * ld_insert_last(void *liste, size_t len, void *p_data){
   size_t total_len = len + sizeof(node);
   void * new_node;
 
-  test_memory (liste, total_len); //on verifie que l'on est assez de memoire, et le cas échéant, on augmente la memoire
+  test_memory (liste, total_len, ((head *)liste)->memory ); //on verifie que l'on est assez de memoire, et le cas échéant, on augmente la memoire
   
   if( ((head *)liste)->first ) {//liste contenant au moins 1 element
     ptrdiff_t addrs_free_mem =  ((head *)liste)->len - nb_blocs (ld_total_useful_memory (liste)) +1;
@@ -187,10 +189,10 @@ void * ld_insert_before(void*liste, void*n, size_t len, void*p_data){
   size_t total_len = len + sizeof(node);
   void * new_node;
 
-  test_memory (liste, total_len); //on verifie que l'on est assez de memoire, et le cas échéant, on augmente la memoire
+  n = test_memory (liste, total_len, n); //on verifie que l'on est assez de memoire, et le cas échéant, on augmente la memoire
 
   if( ((head *)liste)->first == (align_data *)n - (align_data *)((head *)liste)->memory )
-    ld_insert_first (liste, len, p_data);
+    return ld_insert_first (liste, len, p_data);
       
   assert( ((head *)liste)->first ); //liste contenant au moins 2 element & n n'est pas le premier
   
@@ -222,7 +224,7 @@ void * ld_insert_after (void *liste, void *n, size_t len, void *p_data){
   if( ((head *)liste)->last == (align_data *)n - (align_data *)((head *)liste)->memory )
     return ld_insert_last(liste, len, p_data);
 
-  test_memory (liste, total_len); //on verifie que l'on est assez de memoire, et le cas échéant, on augmente la memoire
+  n = test_memory (liste, total_len, n); //on verifie que l'on est assez de memoire, et le cas échéant, on augmente la memoire
    
   assert( ((head *)liste)->first ); //liste contenant au moins 2 element & n n'est pas le dernier
   
@@ -257,22 +259,22 @@ void * ld_delete_node(void*liste, void*n){
   }
   
   else if (((node *)n)->previous == 0){
-    next =ld_next(liste,n);
+    next = ld_next(liste,n);
     ((node * )next)->previous = 0;
-    ((head * )liste)->first=next - ((head * )liste)->memory;
+    ((head * )liste)->first = (align_data *)next - (align_data *)((head * )liste)->memory;
   }
   
   else if (((node *)n)->next == 0){
-    previous =ld_previous(liste,n);
+    previous = ld_previous(liste,n);
     ((node * )previous)->next = 0;
-    ((head*)liste)->last=((align_data *)previous) - ((align_data *)((head * )liste)->memory);
+    ((head*)liste)->last = (align_data *)previous - (align_data *)((head * )liste)->memory;
   }
   
   else {
-    next =ld_next(liste,n);
-    previous =ld_previous(liste,n);
-    ((node * )next)->previous =(align_data*)previous-(align_data*)next ;
-    ((node * )previous)->next = (align_data*)next-(align_data*)previous;
+    next = ld_next(liste,n);
+    previous = ld_previous(liste,n);
+    ((node * )next)->previous = (align_data*)previous - (align_data*)next ;
+    ((node * )previous)->next = (align_data*)next - (align_data*)previous;
   }
   ((head *)liste)->nbr_noeud --;
 
@@ -311,15 +313,13 @@ size_t  ld_total_useful_memory (void*liste){
 //agrandit la mémoire de nb_octets. Comme pour la création de la liste, on arrondit nb_octets vers un multiple de sizeof(align_data). Il est impossible de diminuer la taille de mémoire. La fonction retourne NULL en cas deproblème et liste sinon.
 
 void *ld_add_memory (void *liste, size_t nboctets){
-  size_t taille = nb_blocs (((head *)liste)->len + nboctets );
-  void * temp = realloc ( ((head *)liste)->memory, taille * sizeof (align_data));
+  size_t taille_o = ((head *)liste)->len + nb_blocs (nboctets);
+  taille_o *= sizeof(align_data);
+  void * temp = realloc ( ((head *)liste)->memory, taille_o);
 
-  printf("LISTE LEN : %lu\n", ((head *)liste)->len);  
-  
   if (temp != NULL){
     ((head *)liste)->memory = temp;
-    ((head *)liste)->len = taille;
-    printf("LISTE LEN : %lu\n", ((head *)liste)->len);
+    ((head *)liste)->len = nb_blocs (taille_o);
     return liste;
   }
     
@@ -329,22 +329,24 @@ void *ld_add_memory (void *liste, size_t nboctets){
 //compacte la liste en mettant les nœuds au début de la mémoire avec une seule tranche de blocs libres à la fin de la mémoire.(La fonction devra sans doute allouer une nouvelle mémoire (de la même taille que l’ancienne) pour y recopier tous les nœuds l’un après l’autre dans l’ordre de parcours sur la liste.) La fonction retourne NULL en cas de problème (échec de malloc), sinon elle retourne liste.
 
 void *ld_compactify(void*liste){
-  size_t size_of_liste = ((head*)liste)->len;
+  size_t size_of_liste = ((head*)liste)->len * sizeof(align_data);
   void * new_liste = ld_create ( size_of_liste );
-  if (new_liste == NULL)
-    return NULL;
-  size_t taille_data;
   
   if (new_liste == NULL)
     return NULL;
+
+  size_t taille_data;  
+  void *current = ld_first (liste);
   
-  void *current = (align_data *)((head *)liste)->memory + ((head *)liste)->first;
   do{
     taille_data = (((node *)current)->len * sizeof(align_data)) - sizeof(node);
     ld_insert_last (new_liste, taille_data, (node *)current+1);
     current  = (align_data *)current + ((node *)current)->next;
   } while ( ((node *)current)->next ); 
 
+  taille_data = (((node *)current)->len * sizeof(align_data)) - sizeof(node);
+  ld_insert_last (new_liste, taille_data, (node *)current+1);
+    
   memmove ( ((head *)liste)->memory, ((head *)new_liste)->memory, size_of_liste);
   ((head *)liste)->first = ((head*)new_liste)->first;
   ((head *)liste)->last = ((head*)new_liste)->last;
@@ -372,12 +374,14 @@ static size_t nb_blocs (size_t o){
 }
 
 //test si la mémoir peut contenir len octets de plus, sinon, rajoute 1000 octets
-static void *test_memory (void *liste, size_t len) {
-  void * result = NULL;
+static void *test_memory (void *liste, size_t len, void *node) {
+  void * result = liste;
+  ptrdiff_t n = (align_data *)node - (align_data *)((head *)liste)->memory;
   while( ld_total_useful_memory (liste) <= len)
     result = ld_add_memory (liste, 1000);
-    
-  return result;
+  if (result == NULL)
+    return result;
+  return (align_data *)((head *)liste)->memory + n;
 }
 
 
